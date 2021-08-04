@@ -1,5 +1,5 @@
 import pygame
-
+import socket
 #global varibales
 white=(255,255,255)
 red=(255,0,0)
@@ -53,7 +53,7 @@ def main():
 
 
     while run:
-        clock.tick(143)
+        clock.tick(144)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
