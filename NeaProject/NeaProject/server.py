@@ -2,7 +2,13 @@ import socket
 from _thread import *
 import sys
 
-server = ""
+# this gets the hostname 
+hostname = socket.gethostname()
+
+# getting the IP address using socket.gethostbyname() method
+ip_address = socket.gethostbyname(hostname)
+
+server = str(ip_address)
 port = 5555  # port that is open and free to use
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
