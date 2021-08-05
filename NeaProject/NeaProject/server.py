@@ -2,11 +2,9 @@ import socket
 from _thread import *
 import sys
 
-# this gets the hostname 
-hostname = socket.gethostname()
 
-# getting the IP address using socket.gethostbyname() method
-ip_address = socket.gethostbyname(hostname)
+hostname = socket.gethostname()  # this gets the hostname 
+ip_address = socket.gethostbyname(hostname) 
 
 server = str(ip_address)
 port = 5555  # port that is open and free to use
@@ -26,7 +24,8 @@ sock.listen() # opens the socket making it ready to accept connection, it takes 
 print("SERVER STARTED!")
 
 def threaded_client(connection):
-    
+    connection.send(str.encode("Connected")) # sendind message to client 
+
     data = ""
     while True:
         try:
@@ -44,6 +43,11 @@ def threaded_client(connection):
         except:
             break
 
+    print("Lost connection")
+    connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
+
+
+
 
 
 print(sock.accept())
@@ -55,4 +59,4 @@ while True:
     connection, address = sock.accept()
     print("Connected to:" , address)
 
-    start_new_thread(threaded_client,(conn,))
+    #start_new_thread(threaded_client,(conn,))
