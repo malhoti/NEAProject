@@ -19,16 +19,16 @@ try:
 except: # if the 'binding' fails instead of crashing we send an output of the error
     print(socket.error)
 
-sock.listen(2) # opens the socket making it ready to accept connection, it takes one arguement, limiting how many clients can join the server. If empty it is unlimited
+sock.listen() # opens the socket making it ready to accept connection, it takes one arguement, limiting how many clients can join the server. If empty it is unlimited
 # if all goes well up to here, the server has started and is waiting for connections
 
 print("SERVER STARTED!")
 
 
 def threaded_client(connection):
-    connection.send(str.encode("Connected")) # sendind message to client 
+    connection.send(str.encode("Connected")) # sending message to client 
     reply= ""
-    data = ""
+    
     while True:
         try:
             data = connection.recv(2048) # number of bits that the connection can recieve
