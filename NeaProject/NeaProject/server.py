@@ -19,13 +19,15 @@ try:
 except: # if the 'binding' fails instead of crashing we send an output of the error
     print(socket.error)
 
-sock.listen() # opens the socket making it ready to accept connection, it takes one arguement, limiting how many clients can join the server. If empty it is unlimited
+sock.listen(2) # opens the socket making it ready to accept connection, it takes one arguement, limiting how many clients can join the server. If empty it is unlimited
 # if all goes well up to here, the server has started and is waiting for connections
+
 print("SERVER STARTED!")
+
 
 def threaded_client(connection):
     connection.send(str.encode("Connected")) # sendind message to client 
-
+    reply= ""
     data = ""
     while True:
         try:
@@ -34,7 +36,8 @@ def threaded_client(connection):
 
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
 
-                print(connection," disconnected")
+                print("Disconnected")
+                break
             else:
                 print("Recieved: ", reply)
                 print("Sending: ", reply)
@@ -50,7 +53,6 @@ def threaded_client(connection):
 
 
 
-print(sock.accept())
 
 # threading is basically allowing many function to be processed at the same time. For this case, whilst the while loop is running, if it callsthreaded_client, it doesnt need that function to finish to carry on the while loop, the while loop will still run whilt the function is also running
 # this is so that it is always allowing for connections to connect. if the function is being run, and a client joins the server, then they wont be able to join as te while loop isnt running at that current time. so threading fixes that problem
@@ -59,4 +61,4 @@ while True:
     connection, address = sock.accept()
     print("Connected to:" , address)
 
-    #start_new_thread(threaded_client,(conn,))
+    start_new_thread(threaded_client,(connection,))
