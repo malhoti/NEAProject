@@ -1,5 +1,6 @@
 import pygame
 import socket
+from network import Network
 #global varibales
 white=(255,255,255)
 red=(255,0,0)
@@ -37,29 +38,51 @@ class Player():
         if keys[pygame.K_DOWN]:
             self.y += self.velocity
 
+        self.update()
+    
+    def update(self):
+
         self.rect = (self.x, self.y, self.width, self.height)
 
+def read_position(string):      # this reads the position that is given as string and converts to integers we can use
+    string = string.split(",")
+    return int(string[0]), int (string[1])
 
+def make_position(tuple):      # this takes the int value of position and converts to string
+    return str(tuple[0]) + "," + str(tuple[1])
 
-def redrawWindow(window, player):
+def redrawWindow(window, player1, player2):
     window.fill(white)
-    player.draw(window)
+    player1.draw(window)
+    player2.draw(window)
     pygame.display.update()
 
 def main():
     run = True
-    p = Player(50,50,100,100,(0,255,0))
+    network = Network()
+    startPosition = read_position(network.getPosition())
+
+
+    player1 = Player(startPosition[0],startPosition[1],100,100,(0,255,0))
+    player2 = Player(0,0,100,100,(0,255,0))
     clock = pygame.time.Clock()
 
 
     while run:
         clock.tick(144)
+
+        player2Position = read_position(network.send(make_position((player1.x,player1.y))))
+        player2.x = player2Position[0]
+        player2.y = player2Position[1]
+
+        player2.update()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
 
         p.move()
-        redrawWindow(window, p)
+        redrawWindow(window, player1, player2)
 
 main()

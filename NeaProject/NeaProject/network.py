@@ -14,8 +14,10 @@ class Network:
         self.server = str(self.ip_address)
         self.port = 5555 # port that is open and free to use
         self.address = (self.server, self.port)
-        self.id = self.connect()
-        print(self.id)
+        self.position = self.connect()
+    
+    def getPosition(self):
+        return self.position
     
     def connect(self):
         try:

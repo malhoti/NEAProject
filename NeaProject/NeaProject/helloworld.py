@@ -1,4 +1,5 @@
 print('hello mal')
+import random
 
 import socket
 
@@ -9,3 +10,4 @@ ip_address = socket.gethostbyname(hostname)
 
 print(hostname)
 print(ip_address)
+
