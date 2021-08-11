@@ -4,6 +4,9 @@ from network import Network
 #global varibales
 white=(255,255,255)
 red=(255,0,0)
+green=(0,255,0)
+blue= (0,0,255)
+
 
 width = 600
 height = 900
@@ -46,7 +49,7 @@ class Player():
 
 def read_position(string):      # this reads the position that is given as string and converts to integers we can use
     string = string.split(",")
-    return int(string[0]), int (string[1])
+    return int(string[0]), int(string[1])
 
 def make_position(tuple):      # this takes the int value of position and converts to string
     return str(tuple[0]) + "," + str(tuple[1])
@@ -63,8 +66,8 @@ def main():
     startPosition = read_position(network.getPosition())
 
 
-    player1 = Player(startPosition[0],startPosition[1],100,100,(0,255,0))
-    player2 = Player(0,0,100,100,(0,255,0))
+    player1 = Player(startPosition[0],startPosition[1],100,100,(green))
+    player2 = Player(0,0,100,100,(red))
     clock = pygame.time.Clock()
 
 
@@ -82,7 +85,7 @@ def main():
                 run = False
                 pygame.quit()
 
-        p.move()
+        player1.move()
         redrawWindow(window, player1, player2)
 
 main()
