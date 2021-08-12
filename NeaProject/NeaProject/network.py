@@ -1,4 +1,6 @@
 import socket
+import pickle #allows to send objects through network
+
 
 class Network:
    
@@ -14,22 +16,22 @@ class Network:
         self.server = str(self.ip_address)
         self.port = 5555 # port that is open and free to use
         self.address = (self.server, self.port)
-        self.position = self.connect()
+        self.p = self.connect()
     
-    def getPosition(self):
-        return self.position
+    def getP(self):
+        return self.p
     
     def connect(self):
         try:
             self.client.connect(self.address)
-            return self.client.recv(2048).decode()
+            return pickle.loads(self.client.recv(2048))
         except:
             pass
     
     def send(self, data):
         try:
-            self.client.send(str.encode(data))
-            return self.client.recv(2048).decode()
+            self.client.send(pickle.dumps(data))
+            return pickle.loads(self.client.recv(2048))
         except:
             print(socket.error())
 

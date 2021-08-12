@@ -1,7 +1,8 @@
 import socket
 from _thread import *
 import sys
-
+from player import Player
+import pickle
 
 hostname = socket.gethostname()  # this gets the hostname 
 ip_address = socket.gethostbyname(hostname) 
@@ -24,23 +25,18 @@ sock.listen(2) # opens the socket making it ready to accept connection, it takes
 
 print("SERVER STARTED!")
 
-pos = [(0,0),(100,100)]
+players = [Player(0,0,100,100,(0,255,0)),Player(0,0,100,100,(255,0,0))]
 
-def read_position(string):      # this reads the position that is given as string and converts to integers we can use
-    string = string.split(",")
-    return int(string[0]), int(string[1])
 
-def make_position(tuple):      # this takes the int value of position and converts to string
-    return str(tuple[0]) + "," + str(tuple[1])
 
 def threaded_client(connection, player):
-    connection.send(str.encode(make_position(pos[player]))) # sending message to client 
+    connection.send(pickle.dumps(players[player])) # sending message to client 
     reply= ""
     
     while True:
         try:
-            data = read_position(connection.recv(2048).decode())   # number of bits that the connection can recieve
-            pos[player] = data
+            data = pickle.loads((connection.recv(2048)))  # number of bits that the connection can recieve
+            players[player] = data
 
             
 
@@ -50,14 +46,14 @@ def threaded_client(connection, player):
                 break
             else:
                 if player == 1:
-                    reply = pos[0]
+                    reply = players[0]
                 else:
-                    reply = pos[1]
+                    reply = players[1]
 
                 print("Recieved: ", reply)
                 print("Sending: ", reply)
             
-            connection.sendall(str.encode(make_position(reply))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            connection.sendall(pickle.dumps(reply)) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 
