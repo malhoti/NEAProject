@@ -25,11 +25,12 @@ sock.listen(2) # opens the socket making it ready to accept connection, it takes
 
 print("SERVER STARTED!")
 
-players = [Player(0,0,100,100,(0,255,0)),Player(0,0,100,100,(255,0,0))]
+players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
 
 
 def threaded_client(connection, player):
+    global currentplayer
     connection.send(pickle.dumps(players[player])) # sending message to client 
     reply= ""
     
@@ -43,6 +44,7 @@ def threaded_client(connection, player):
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
 
                 print("Disconnected")
+                currentPlayer = 0
                 break
             else:
                 if player == 1:
@@ -58,6 +60,7 @@ def threaded_client(connection, player):
             break
 
     print("Lost connection")
+    currentPlayer = 0
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 
 
@@ -74,5 +77,5 @@ while True:
     connection, address = sock.accept()
     print("Connected to:" , address)
 
-    start_new_thread(threaded_client,(connection,currentPlayer))
+    start_new_thread(threaded_client,(connection,currentPlayer%2))
     currentPlayer+= 1

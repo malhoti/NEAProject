@@ -1,13 +1,5 @@
-print('hello mal')
-import random
+num = 3
 
-import socket
+num *= -1
 
-hostname = socket.gethostname()
-
-# getting the IP address using socket.gethostbyname() method
-ip_address = socket.gethostbyname(hostname)
-
-print(hostname)
-print(ip_address)
-
+print (num)
