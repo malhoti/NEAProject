@@ -2,7 +2,7 @@ import socket
 from _thread import *
 import sys
 from player import Player
-import pickle
+
 
 hostname = socket.gethostname()  # this gets the hostname 
 ip_address = socket.gethostbyname(hostname) 
@@ -25,48 +25,53 @@ sock.listen(2) # opens the socket making it ready to accept connection, it takes
 
 print("SERVER STARTED!")
 
-players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
+#players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
 
+
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+pos = [(100,100),(200,200)]
 
 def threaded_client(connection, player):
     global currentplayer
-    connection.send(pickle.dumps(players[player])) # sending message to client 
+    connection.send(str.encode(make_pos(pos[player]))) # sending message to client 
     reply= ""
     
     while True:
         try:
-            data = pickle.loads((connection.recv(2048)))  # number of bits that the connection can recieve
-            players[player] = data
+            data = read_pos((connection.recv(2048)).decode())  # number of bits that the connection can recieve
+            pos[player] = data
 
             
 
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
 
                 print("Disconnected")
-                currentPlayer = 0
+                
                 break
             else:
                 if player == 1:
-                    reply = players[0]
+                    reply = pos[0]
                 else:
-                    reply = players[1]
+                    reply = pos[1]
 
-                print("Recieved: ", reply)
-                print("Sending: ", reply)
+                #print("Recieved: ", data)
+                #print("Sending: ", reply)
             
-            connection.sendall(pickle.dumps(reply)) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            connection.sendall(str.encode(make_pos(reply))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 
     print("Lost connection")
     currentPlayer = 0
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
-
-
-
-
-
 
 # threading is basically allowing many function to be processed at the same time. For this case, whilst the while loop is running, if it callsthreaded_client, it doesnt need that function to finish to carry on the while loop, the while loop will still run whilt the function is also running
 # this is so that it is always allowing for connections to connect. if the function is being run, and a client joins the server, then they wont be able to join as te while loop isnt running at that current time. so threading fixes that problem

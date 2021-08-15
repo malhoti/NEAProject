@@ -3,15 +3,20 @@ from settings import *
 vec = pygame.math.Vector2 # vectors for easier handling when creating positions
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, colour):
+    def __init__(self, x, y, width,height,colour):
         pygame.sprite.Sprite.__init__(self)
-        
+        self.x = x
+        self.y = y
         self.width = width
         self.height = height
         self.colour = colour
-        self.rect = (x, y, width, height)
 
-        self.position = vec(width/2,height/2)
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill(colour)
+        self.rect = self.image.get_rect()
+        self.rect.center = (width / 2, height / 2)
+        
+        self.position = vec(self.x,self.y)
 
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
@@ -24,12 +29,8 @@ class Player(pygame.sprite.Sprite):
         self.mass = 1
         self.turning_point = 1
 
-    def draw(self, window):
-        pygame.draw.rect(window, self.colour, self.rect)
-
     def move(self):
-        self.acceleration = vec(0,PLAYER_gravity) # id keys arent being pressed put acceleration to 0 as its not moving
-        
+        self.acceleration = vec(0,PLAYER_gravity)
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT]:
@@ -37,30 +38,30 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT]:
             self.acceleration.x = PLAYER_acceleration
 
+        self.update()
+
+       
+        
+    def update(self):
+        
+       # self.acceleration = vec(0,PLAYER_gravity) # if keys arent being pressed put acceleration to 0 as its not moving, PLAYER_gravity affect the y axis, so it adds gravity constantly to the player
+        
+        
+        # applying friction in movement
         self.acceleration.x += self.velocity.x * PLAYER_friction
         self.velocity += self.acceleration
         self.position += self.acceleration*0.5  + self.velocity
         
-        
-       
-        # if not (self.isJump): # this is so that you can only move left and right when jumping
-        #     if keys[pygame.K_UP] and self.y >0:
-        #         self.y -= self.velocity
-        #     if keys[pygame.K_DOWN] and self.y < (screen.height-self.height):
-        #         self.y += self.velocity
-
-        if keys[pygame.K_SPACE]:
-            self.isJump = True
-            
-        if self.isJump:
-            self.jump()
              
-       
+       # switching to other side of screen if it hits the edge
         if self.position.x > screen_width:
             self.position.x = 0
         if self.position.x < 0:
             self.position.x = screen_width
-        self.update()
+
+        self.rect.midbottom = self.position
+
+        
 
     def jump(self):
         
@@ -81,10 +82,6 @@ class Player(pygame.sprite.Sprite):
             self.temp_velocity = self.velocity
         
         
+    #def update(self):
         
-
-
-    
-    def update(self):
-
-        self.rect = (self.position.x,self.position.y, self.width, self.height)
+        #self.rect = (self.position.x,self.position.y, self.width, self.height)

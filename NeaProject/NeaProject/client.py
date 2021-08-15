@@ -1,68 +1,131 @@
-import pygame
+import pygame as pg
 import socket
+from platforms import Platform
 from network import Network
 from player import Player
-from platform import *
+
 from settings import *
 
-#global varibales
-white=(255,255,255)
-red=(255,0,0)
-green=(0,255,0)
-blue= (0,0,255)
+class Game:
+    def __init__(self):
+        pg.init()
+        pg.mixer.init()
+        self.screen = pg.display.set_mode((screen_width, screen_height))
+        pg.display.set_caption(title)
+        self.clock = pg.time.Clock()
+        self.running = True
 
 
+    def new(self):
+        self.network = Network()
+        
+        self.startPos = self.read_pos(self.network.getP())
+        print(self.startPos)
 
+        self.totalSprites = pg.sprite.Group()
+        self.platforms = pg.sprite.Group()
+ #______________________________________________________________________________________________       
+        self.player1 = Player(self.startPos[0],self.startPos[1],100,100,green) # PLAYER 1
+        self.totalSprites.add(self.player1)
 
-window = pygame.display.set_mode((screen_width,screen_height))
-pygame.display.set_caption("Game")
-
-
-
-def redrawWindow(window, player1, player2,p1):
-    window.fill(white)
-    player2.draw(window)
-    player1.draw(window)
-    p1.draw(window)
+        self.player2 = Player(0,0,100,100,red)  # PLAYER 2
+        self.totalSprites.add(self.player2)
     
-    pygame.display.update()
+#______________________________________________________________________________________________
+        p1 = Platform(0, screen_height - 40, screen_width, 40)
+        self.totalSprites.add(p1)
+        self.platforms.add(p1)
 
-def main():
-    network = Network()
+        p2 = Platform(screen_width / 2 - 50, screen_height * 3 / 4, 100, 20)
+        self.totalSprites.add(p2)
+        self.platforms.add(p2)
+        self.run()
 
-    all_sprites = pygame.sprite.Group()
-    platforms = pygame.sprite.Group()
-    
-    player1 = network.getP()
-    all_sprites.add(player1)
 
-    p1 = Platform(0, screen_height - 40, screen_width, 40)
-    all_sprites.add(p1)
-    platforms.add(p1)
+    def run(self):
+        self.run = True
+        while self.run:
+            self.clock.tick(fps)
+            self.events()
+            self.update()
+            self.draw()
 
-    p2 = Platform(screen_width / 2 - 50, screen_height * 3 / 4, 100, 20)
-    all_sprites.add(p2)
-    platforms.add(p2)
-    
-    
-    
-    
-    
-    clock = pygame.time.Clock()
 
-    run = True
-    while run:
-        clock.tick(144)
-        player2 = network.send(player1) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+    def events(self):
+        print(self.player1.position.x)
+        player2Pos = self.read_pos(self.network.send(self.make_pos((int(self.player1.position.x), int(self.player1.position.y))))) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+        print(player2Pos)
+        self.player2.position.x = player2Pos[0]
+        
+        self.player2.position.y = player2Pos[1]
+        self.player2.update()
+        
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                if self.run:
+                    self.run = False
+                self.running = False
+                
 
+    def update(self):
+        self.player1.move()
+        
         
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
+        hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
+        if hits:
+            self.player1.position.y = hits[0].rect.top
+            self.player1.velocity.y = 0
 
-        player1.move()
-        redrawWindow(window, player1, player2,p1)
+       
 
-main()
+
+
+    def draw(self):
+
+        self.screen.fill(white)
+        self.totalSprites.draw(self.screen)
+        pg.display.flip() # updates the whole screen
+
+
+    def read_pos(self, str):
+        str = str.split(",")
+        return int(str[0]), int(str[1])
+
+
+    def make_pos(self, tup):
+        return str(tup[0]) + "," + str(tup[1])
+
+    
+
+    # def main():
+       
+    #     clock = pygame.time.Clock()
+
+    #     run = True
+    #     while run:
+    #         totalSprites.update()
+
+    #         clock.tick(144)
+
+    #         player2Pos = read_pos(network.send(make_pos((player1.x, player1.y)))) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+    #         print(player2Pos)
+    #         player2.x = player2Pos[0]
+    #         print(player2.x)
+    #         player2.y = player2Pos[1]
+    #         print(player2.x)
+    #         player2.update()
+            
+
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 run = False
+    #                 pygame.quit()
+
+            
+    #         redrawWindow(window, player1, player2, platforms)
+game = Game()
+while game.running:
+    game.new()
+
+pg.quit()  

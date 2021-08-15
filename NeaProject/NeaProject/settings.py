@@ -1,5 +1,7 @@
 screen_width=1000
 screen_height = 900
+title = "Game"
+fps = 144
 PLAYER_acceleration = 0.5
 PLAYER_friction = -0.05
 PLAYER_velocity = 3

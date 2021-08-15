@@ -1,5 +1,3 @@
-num = 3
-
-num *= -1
-
-print (num)
+num = (1,56,24)
+print(num)
+print(str(num))
