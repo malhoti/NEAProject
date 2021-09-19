@@ -19,26 +19,24 @@ class Game:
     def new(self):
         self.network = Network()
         
-        self.startPos = self.read_pos(self.network.getP())
-        print(self.startPos)
+        #self.startPos = self.read_pos(self.network.getP())
+        
 
         self.totalSprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
  #______________________________________________________________________________________________       
-        self.player1 = Player(self.startPos[0],self.startPos[1],100,100,green) # PLAYER 1
+        self.player1 = Player(self,green) # PLAYER 1
         self.totalSprites.add(self.player1)
 
-        self.player2 = Player(0,0,100,100,red)  # PLAYER 2
+        self.player2 = Player(self,red)  # PLAYER 2
         self.totalSprites.add(self.player2)
     
 #______________________________________________________________________________________________
-        p1 = Platform(0, screen_height - 40, screen_width, 40)
-        self.totalSprites.add(p1)
-        self.platforms.add(p1)
-
-        p2 = Platform(screen_width / 2 - 50, screen_height * 3 / 4, 100, 20)
-        self.totalSprites.add(p2)
-        self.platforms.add(p2)
+        for platform in PLATFROM_ARRAY:
+            p = Platform(*platform)             # *platdeom is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
+            self.totalSprites.add(p)
+            self.platforms.add(p)
+       
         self.run()
 
 
@@ -52,9 +50,8 @@ class Game:
 
 
     def events(self):
-        print(self.player1.position.x)
         player2Pos = self.read_pos(self.network.send(self.make_pos((int(self.player1.position.x), int(self.player1.position.y))))) #when you send player1, the network sends player 2 to this client, and viceversa for player2
-        print(player2Pos)
+        
         self.player2.position.x = player2Pos[0]
         
         self.player2.position.y = player2Pos[1]
@@ -65,17 +62,20 @@ class Game:
                 if self.run:
                     self.run = False
                 self.running = False
+            if event.type == pg.KEYDOWN:    
+                if event.key == pg.K_SPACE:
+                    self.player1.jump()
                 
 
     def update(self):
         self.player1.move()
         
         
-
-        hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
-        if hits:
-            self.player1.position.y = hits[0].rect.top
-            self.player1.velocity.y = 0
+        if self.player1.velocity.y> 0:  # what this does, is it only checks collisions whilst falling, not whilst jumping
+            hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
+            if hits:
+                self.player1.position.y = hits[0].rect.top
+                self.player1.velocity.y = 0
 
        
 
@@ -85,7 +85,7 @@ class Game:
 
         self.screen.fill(white)
         self.totalSprites.draw(self.screen)
-        pg.display.flip() # updates the whole screen
+        pg.display.update() # updates the whole screen, try to limit the times you update screen as this is the most intensive code. slowing the animation by a lot
 
 
     def read_pos(self, str):
@@ -98,32 +98,6 @@ class Game:
 
     
 
-    # def main():
-       
-    #     clock = pygame.time.Clock()
-
-    #     run = True
-    #     while run:
-    #         totalSprites.update()
-
-    #         clock.tick(144)
-
-    #         player2Pos = read_pos(network.send(make_pos((player1.x, player1.y)))) #when you send player1, the network sends player 2 to this client, and viceversa for player2
-    #         print(player2Pos)
-    #         player2.x = player2Pos[0]
-    #         print(player2.x)
-    #         player2.y = player2Pos[1]
-    #         print(player2.x)
-    #         player2.update()
-            
-
-    #         for event in pygame.event.get():
-    #             if event.type == pygame.QUIT:
-    #                 run = False
-    #                 pygame.quit()
-
-            
-    #         redrawWindow(window, player1, player2, platforms)
 game = Game()
 while game.running:
     game.new()

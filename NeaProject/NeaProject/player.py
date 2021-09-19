@@ -1,22 +1,23 @@
-import pygame
+import pygame 
 from settings import *
 vec = pygame.math.Vector2 # vectors for easier handling when creating positions
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, width,height,colour):
+    def __init__(self,game,colour):
         pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        # self.x = x
+        # self.y = y
+        # self.width = width
+        # self.height = height
         self.colour = colour
+        self.game = game 
 
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((40, 70))
         self.image.fill(colour)
         self.rect = self.image.get_rect()
-        self.rect.center = (width / 2, height / 2)
+        # self.rect.center = (width / 2, height / 2)
         
-        self.position = vec(self.x,self.y)
+        self.position = vec(50,700)
 
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
@@ -30,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         self.turning_point = 1
 
     def move(self):
-        self.acceleration = vec(0,PLAYER_gravity)
+        self.acceleration = vec(0,PLAYER_gravity)  # if keys arent being pressed put acceleration to 0 as its not moving, PLAYER_gravity affect the y axis, so it adds gravity constantly to the player
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT]:
@@ -41,11 +42,10 @@ class Player(pygame.sprite.Sprite):
         self.update()
 
        
-        
-    def update(self):
-        
-       # self.acceleration = vec(0,PLAYER_gravity) # if keys arent being pressed put acceleration to 0 as its not moving, PLAYER_gravity affect the y axis, so it adds gravity constantly to the player
-        
+    # we seperate the update and moving function apart beacuse, if moving and updating the position of the players are in one function, then one client can control both players movements and be synchrnoized.
+    # which is why when we update the client code, we call move for player1, but only update for player2 so that player 2 cant move only when a second client joins    
+    def update(self):  
+
         
         # applying friction in movement
         self.acceleration.x += self.velocity.x * PLAYER_friction
@@ -64,24 +64,12 @@ class Player(pygame.sprite.Sprite):
         
 
     def jump(self):
-        
-        force = ((1/2)*self.mass*((self.jump_velocity*2.5)**2))*self.turning_point
-        print(force)
-        self.position.y -= force
+        # jump allowed only if standing on a platform
 
-        self.jump_velocity -= 0.2
-
-        if self.jump_velocity < 0:
-            self.turning_point=-1
-
-        if self.velocity <= (self.velocity*-1)-0.2:
-            self.isJump = False
-
-            self.turning_point=1
-
-            self.temp_velocity = self.velocity
-        
-        
-    #def update(self):
-        
-        #self.rect = (self.position.x,self.position.y, self.width, self.height)
+        #self.rect.x += 1 
+        hits = pygame.sprite.spritecollide(self, self.game.platforms, False)
+        #self.rect.x -= 1
+        if hits:
+            self.velocity.y =-20
+       
+    
