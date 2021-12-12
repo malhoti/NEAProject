@@ -2,7 +2,9 @@ import socket
 from _thread import *
 import sys
 from player import Player
+import random
 
+from settings import *
 
 hostname = socket.gethostname()  # this gets the hostname 
 ip_address = socket.gethostbyname(hostname) 
@@ -27,17 +29,29 @@ print("SERVER STARTED!")
 
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
+def make_platform():
+    platform = (2,random.randint(0,screen_width),random.randint(0,screen_height),40,80)
+    return platform
 
+
+#def read_pos(str):
+ #   str = str.split(",")
+  #  return int(str[0]), int(str[1])
 
 def read_pos(str):
+    
     str = str.split(",")
-    return int(str[0]), int(str[1])
-
+ 
+    return int(str[0]),int(str[1]), int(str[2])
 
 def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
+    string = str( str(tup[0]) + "," + str(tup[1]) + "," + str(tup[2]))
+    
+    return string
+#def make_pos(tup):
+    #return str(tup[0]) + "," + str(tup[1])
 
-pos = [(100,100),(200,200)]
+pos = [(0,0,0),(0,0,0)]
 
 def threaded_client(connection, player):
     global currentplayer
@@ -59,13 +73,15 @@ def threaded_client(connection, player):
             else:
                 if player == 1:
                     reply = pos[0]
+
                 else:
                     reply = pos[1]
 
                 #print("Recieved: ", data)
                 #print("Sending: ", reply)
             
-            connection.sendall(str.encode(make_pos(reply))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            #change to sendall if something doesnt work
+            connection.send(str.encode(make_pos(reply))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 
