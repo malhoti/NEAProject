@@ -12,11 +12,8 @@ PLAYER_jumpvelocity = 9
 PLAYER_gravity = 0.9
 
 #Platfroms
-PLATFROM_ARRAY = [(0, screen_height-40, screen_width,40),
-                    (screen_width/2-40,screen_height*0.7,100,20),
-                    (125, screen_width - 350, 100, 20),
-                    (350, 200, 100, 20),
-                    (175, 100, 50, 20)]
+PLATFROM_ARRAY = [(2,0, screen_height-40, screen_width,40)]
+                
 
 #global varibales
 white=(255,255,255)

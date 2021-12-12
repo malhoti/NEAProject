@@ -21,7 +21,7 @@ class Game:
         
         #self.startPos = self.read_pos(self.network.getP())
         
-
+        
         self.totalSprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
  #______________________________________________________________________________________________       
@@ -33,7 +33,7 @@ class Game:
     
 #______________________________________________________________________________________________
         for platform in PLATFROM_ARRAY:
-            p = Platform(*platform)             # *platdeom is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
+            p = Platform(*platform)             # *platform is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
             self.totalSprites.add(p)
             self.platforms.add(p)
        
@@ -50,11 +50,12 @@ class Game:
 
 
     def events(self):
-        player2Pos = self.read_pos(self.network.send(self.make_pos((int(self.player1.position.x), int(self.player1.position.y))))) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+        made_pos=self.make_pos(1,(int(self.player1.position.x), int(self.player1.position.y)))
+        player2Pos = self.read_pos(self.network.send(made_pos)) #when you send player1, the network sends player 2 to this client, and viceversa for player2
         
-        self.player2.position.x = player2Pos[0]
+        self.player2.position.x = player2Pos[1]
         
-        self.player2.position.y = player2Pos[1]
+        self.player2.position.y = player2Pos[2]
         self.player2.update()
         
         for event in pg.event.get():
@@ -77,10 +78,6 @@ class Game:
                 self.player1.position.y = hits[0].rect.top
                 self.player1.velocity.y = 0
 
-       
-
-
-
     def draw(self):
 
         self.screen.fill(white)
@@ -89,12 +86,16 @@ class Game:
 
 
     def read_pos(self, str):
+        
         str = str.split(",")
-        return int(str[0]), int(str[1])
+        
+        return int(str[0]),int(str[1]), int(str[2])
 
 
-    def make_pos(self, tup):
-        return str(tup[0]) + "," + str(tup[1])
+    def make_pos(self,types, tup):
+        string = str( str(types) + "," + str(tup[0]) + "," + str(tup[1]))
+        
+        return string
 
     
 

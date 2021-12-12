@@ -24,12 +24,15 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.address)
-            return self.client.recv(2048).decode()
+            temp = self.client.recv(2048).decode()
+            return temp
         except:
             pass
     
     def send(self, data):
         try:
+            
+           
             self.client.send(str.encode(data))
             return self.client.recv(2048).decode()
         except:

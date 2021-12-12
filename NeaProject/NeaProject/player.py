@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # self.rect.center = (width / 2, height / 2)
         
-        self.position = vec(50,700)
+        self.position = vec(42,700)
 
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
@@ -60,15 +60,13 @@ class Player(pygame.sprite.Sprite):
             self.position.x = screen_width
 
         self.rect.midbottom = self.position
-
-        
+#self.rect.x += 1 
+    #self.rect.x -= 1    
 
     def jump(self):
         # jump allowed only if standing on a platform
-
-        #self.rect.x += 1 
         hits = pygame.sprite.spritecollide(self, self.game.platforms, False)
-        #self.rect.x -= 1
+        
         if hits:
             self.velocity.y =-20
        
