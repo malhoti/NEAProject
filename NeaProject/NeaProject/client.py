@@ -50,10 +50,18 @@ class Game:
 
 
     def events(self):
-        made_pos=self.make_pos(1,(int(self.player1.position.x), int(self.player1.position.y)))
-        player2Pos = self.read_pos(self.network.send(made_pos)) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+        info_recv = self.read_pos(self.network.send(self.make_pos((int(self.player1.position.x), int(self.player1.position.y)))))
         
-        self.player2.position.x = player2Pos[1]
+        for reply in info_recv:
+            
+            player2Pos = self.read_pos(reply[0]) #when you send player1, the network sends player 2 to this client, and viceversa for player2
+            self.read_pos(reply[1])
+            p = Platform(*reply)             # *platform is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
+            self.totalSprites.add(p)
+            self.platforms.add(p)
+
+        
+        self.player2.position.x = player2Pos[0]
         
         self.player2.position.y = player2Pos[2]
         self.player2.update()
@@ -86,16 +94,23 @@ class Game:
 
 
     def read_pos(self, str):
-        
+        list = []
         str = str.split(",")
+        length = len(str)-1
+        for i in range(len(str)-1):
+            list.append(str[i])
         
-        return int(str[0]),int(str[1]), int(str[2])
+        return list #int(str[0]),int(str[1]), int(str[2])
 
 
-    def make_pos(self,types, tup):
-        string = str( str(types) + "," + str(tup[0]) + "," + str(tup[1]))
-        
-        return string
+    def make_pos(self, tup):
+        string = ""
+        for i in range(len(tup)):
+            string = string + str(tup[i])+","
+     
+        #str( str() + "," + str(tup[0]) + "," + str(tup[1]))
+       
+        return string[:-1]
 
     
 

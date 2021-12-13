@@ -30,7 +30,7 @@ print("SERVER STARTED!")
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
 def make_platform():
-    platform = (2,random.randint(0,screen_width),random.randint(0,screen_height),40,80)
+    platform = (random.randint(0,screen_width),random.randint(0,screen_height),40,80)
     return platform
 
 
@@ -43,19 +43,29 @@ def read_pos(str):
     str = str.split(",")
  
     return int(str[0]),int(str[1]), int(str[2])
-
 def make_pos(tup):
-    string = str( str(tup[0]) + "," + str(tup[1]) + "," + str(tup[2]))
-    
-    return string
-#def make_pos(tup):
-    #return str(tup[0]) + "," + str(tup[1])
+        string = ""
+        for i in range(len(tup)):
+            string = string + str(tup[i])+","
+     
+        #str( str() + "," + str(tup[0]) + "," + str(tup[1]))
+        print(string)
+        return string[:-1]
 
-pos = [(0,0,0),(0,0,0)]
+
+
+pos = [(0,0),(1,1)]
+#platform_pos = []
+#for i in range(5):
+#    platform_pos.append(make_platform())
+platform_pos = (0, screen_height-40, screen_width,40)
 
 def threaded_client(connection, player):
     global currentplayer
-    connection.send(str.encode(make_pos(pos[player]))) # sending message to client 
+
+    info_to_send = (pos[player],platform_pos)
+ 
+    connection.send(str.encode(make_pos(info_to_send))) # sending message to client 
     reply= ""
     
     while True:
@@ -81,7 +91,7 @@ def threaded_client(connection, player):
                 #print("Sending: ", reply)
             
             #change to sendall if something doesnt work
-            connection.send(str.encode(make_pos(reply))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            connection.send(str.encode(make_pos(reply,()))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 

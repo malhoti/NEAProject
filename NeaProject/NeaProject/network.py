@@ -31,8 +31,6 @@ class Network:
     
     def send(self, data):
         try:
-            
-           
             self.client.send(str.encode(data))
             return self.client.recv(2048).decode()
         except:
