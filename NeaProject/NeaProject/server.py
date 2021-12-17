@@ -2,7 +2,10 @@ import socket
 from _thread import *
 import sys
 from player import Player
+from platforms import Platform
 import random
+import pickle
+
 
 from settings import *
 
@@ -29,57 +32,43 @@ print("SERVER STARTED!")
 
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
+
+
+
+
+
+
+
 def make_platform():
-    platform = (random.randint(0,screen_width),random.randint(0,screen_height),40,80)
+    platform = [random.randint(0,screen_width),random.randint(0,screen_height),80,40]
     return platform
 
 
-#def read_pos(str):
- #   str = str.split(",")
-  #  return int(str[0]), int(str[1])
+pos = [[0,0],[1,1]]
+platform_pos = [[0,screen_height-40,screen_width,40]] # this is the bottom platform
 
-def read_pos(str):
-    
-    str = str.split(",")
- 
-    return int(str[0]),int(str[1]), int(str[2])
-def make_pos(tup):
-        string = ""
-        for i in range(len(tup)):
-            string = string + str(tup[i])+","
-     
-        #str( str() + "," + str(tup[0]) + "," + str(tup[1]))
-        print(string)
-        return string[:-1]
+for i in range(10):
+    platform_pos.append(make_platform())
 
-
-
-pos = [(0,0),(1,1)]
-#platform_pos = []
-#for i in range(5):
-#    platform_pos.append(make_platform())
-platform_pos = (0, screen_height-40, screen_width,40)
 
 def threaded_client(connection, player):
     global currentplayer
 
-    info_to_send = (pos[player],platform_pos)
- 
-    connection.send(str.encode(make_pos(info_to_send))) # sending message to client 
-    reply= ""
-    
+    info_to_send = pickle.dumps([pos[player],platform_pos])
+    connection.send(info_to_send)
+        
+    print("data was sent") # sending message to client 
+
+    reply= []
     while True:
         try:
-            data = read_pos((connection.recv(2048)).decode())  # number of bits that the connection can recieve
+            data = pickle.loads(connection.recv(4096)) # number of bits that the connection can recieve
             pos[player] = data
 
-            
-
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
-
                 print("Disconnected")
-                
                 break
+
             else:
                 if player == 1:
                     reply = pos[0]
@@ -87,11 +76,11 @@ def threaded_client(connection, player):
                 else:
                     reply = pos[1]
 
-                #print("Recieved: ", data)
-                #print("Sending: ", reply)
+                print("Recieved: ", data)
+                print("Sending: ", reply)
             
             #change to sendall if something doesnt work
-            connection.send(str.encode(make_pos(reply,()))) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            connection.sendall(pickle.dumps([reply,[]])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 

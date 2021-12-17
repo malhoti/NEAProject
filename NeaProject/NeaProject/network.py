@@ -1,5 +1,5 @@
 import socket
-import pickle #allows to send objects through network
+import pickle  #allows to send objects through network, it decodes and encodes for you
 
 
 class Network:
@@ -24,15 +24,14 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.address)
-            temp = self.client.recv(2048).decode()
-            return temp
+            return pickle.loads(self.client.recv(4096))
         except:
             pass
     
     def send(self, data):
         try:
-            self.client.send(str.encode(data))
-            return self.client.recv(2048).decode()
+            self.client.send(pickle.dumps(data))  #pickle.dumps  = encode
+            return pickle.loads(self.client.recv(4096)) # pickle.loads = decode
         except:
             print(socket.error())
 

@@ -3,7 +3,7 @@ from settings import *
 vec = pygame.math.Vector2 # vectors for easier handling when creating positions
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self,game,colour):
+    def __init__(self,x,y,game,colour):
         pygame.sprite.Sprite.__init__(self)
         # self.x = x
         # self.y = y
@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # self.rect.center = (width / 2, height / 2)
         
-        self.position = vec(42,700)
+        self.position = vec(x,y)
 
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
