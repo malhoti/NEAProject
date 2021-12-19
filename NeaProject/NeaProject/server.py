@@ -34,35 +34,36 @@ print("SERVER STARTED!")
 
 
 
-
-
-
-
-
 def make_platform():
     platform = [random.randint(0,screen_width),random.randint(0,screen_height),80,40]
     return platform
 
 
-pos = [[0,0],[1,1]]
+pos = [[40,screen_height-50],[0,0]]
 platform_pos = [[0,screen_height-40,screen_width,40]] # this is the bottom platform
 
-for i in range(10):
+for i in range(1):
     platform_pos.append(make_platform())
 
 
 def threaded_client(connection, player):
     global currentplayer
 
-    info_to_send = pickle.dumps([pos[player],platform_pos])
-    connection.send(info_to_send)
+    # if player 1 connects , then you send players 2 cooridinates outside the screen so it appaers player 1 is in lobby by itself
+    # if player connects  2 this changes the coordiantes and send it on screen, so on player 1's screen it appear as player 2 just joined the lobby
+    if player ==0:    
+        info_to_send = pickle.dumps([pos[player],platform_pos])
+        connection.send(info_to_send)
+    else : 
+        info_to_send = pickle.dumps([[screen_width-150,screen_height-40],platform_pos])
+        connection.send(info_to_send)
         
     print("data was sent") # sending message to client 
 
     reply= []
     while True:
         try:
-            data = pickle.loads(connection.recv(4096)) # number of bits that the connection can recieve
+            data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
             pos[player] = data
 
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
@@ -76,8 +77,8 @@ def threaded_client(connection, player):
                 else:
                     reply = pos[1]
 
-                print("Recieved: ", data)
-                print("Sending: ", reply)
+                #print("Recieved: ", data)
+                #print("Sending: ", reply)
             
             #change to sendall if something doesnt work
             connection.sendall(pickle.dumps([reply,[]])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again

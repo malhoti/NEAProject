@@ -6,7 +6,7 @@ from player import Player
 import pickle
 from settings import *
 
-from settings import *
+
 
 class Game:
     def __init__(self):
@@ -32,7 +32,7 @@ class Game:
         self.player1 = Player(player1Pos[0],player1Pos[1],self,green) # PLAYER 1
         self.totalSprites.add(self.player1)
 
-        self.player2 = Player(screen_width,0,self,red)  # PLAYER 2 starting position will be out of frame
+        self.player2 = Player(screen_width-150,screen_height-40,self,red)  
         self.totalSprites.add(self.player2)
     
 #______________________________________________________________________________________________
