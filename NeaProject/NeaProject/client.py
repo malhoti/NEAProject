@@ -1,10 +1,13 @@
 import pygame as pg
 import socket
+
+from pygame import time
 from platforms import Platform
 from network import Network
 from player import Player
 import pickle
 from settings import *
+import time
 
 
 
@@ -16,6 +19,8 @@ class Game:
         pg.display.set_caption(title)
         self.clock = pg.time.Clock()
         self.running = True
+        self.send_more_platforms = False
+        
 
 
     def new(self):
@@ -23,19 +28,22 @@ class Game:
         
         self.starting_info = self.network.getP() # get the information sent from the server
 
-        player1Pos = self.starting_info[0]
+        playersPos = self.starting_info[0]
+        player1Pos = playersPos[0]
+        player2Pos = playersPos[1]
+        
         platformPos = self.starting_info[1]
 
         self.totalSprites = pg.sprite.Group() # making sprite groups 
         self.platforms = pg.sprite.Group()
- #______________________________________________________________________________________________       
+     
         self.player1 = Player(player1Pos[0],player1Pos[1],self,green) # PLAYER 1
         self.totalSprites.add(self.player1)
 
-        self.player2 = Player(screen_width-150,screen_height-40,self,red)  
+        self.player2 = Player(player2Pos[0],player2Pos[1],self,red)  
         self.totalSprites.add(self.player2)
     
-#______________________________________________________________________________________________
+
         for i in range(len(platformPos)):
 
             p = Platform(*platformPos[i])       # *platformPos[i] is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
@@ -56,10 +64,15 @@ class Game:
 
     def events(self):
         
-        info_recv = self.network.send([int(self.player1.position.x), int(self.player1.position.y)])  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-        player2Pos = (info_recv[0])
+        info_recv = self.network.send(([int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown],self.send_more_platforms))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
+        
+        self.send_more_platforms = False
+        player2Pos = info_recv[0]
         self.player2.position.x = player2Pos[0]
-        self.player2.position.y = player2Pos[1]
+        self.player2.position.y = player2Pos[1] +(self.player1.pushdown-player2Pos[2])
+        
+
+        
         self.player2.update()
     
         for event in pg.event.get():
@@ -68,21 +81,50 @@ class Game:
                     self.run = False
                 self.running = False
             if event.type == pg.KEYDOWN:    
-                if event.key == pg.K_SPACE:
-                    self.player1.jump()
-                
+               if event.key == pg.K_SPACE:
+                  
+                   self.player1.jump()
+        
+       
+        
+        #for platform in self.platforms:
+            # platform.rect.y += 1
+       
+
 
     def update(self):
         self.player1.move()
         
-        if self.player1.velocity.y> 0:  # what this does, is it only checks collisions whilst falling, not whilst jumping
+        # what this does, is it only checks collisions whilst falling, not whilst jumping
+        if self.player1.velocity.y>= 0 :  
             hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
-            if hits:
-                self.player1.position.y = hits[0].rect.top
-                self.player1.velocity.y = 0
+            if hits :
+                if self.player1.position.y < hits[0].rect.bottom:
+                    self.player1.position.y = hits[0].rect.top
+                    self.player1.velocity.y = 0
 
+        #this is going to act like a camera shift when the player reaches around the top of the screen
+        #and delete platforms that go off the screen
+
+        if self.player1.rect.top <= screen_height/4:
+            self.player1.pushdown +=  round(abs(self.player1.velocity.y))
+            self.player1.position.y += round(abs(self.player1.velocity.y))
+           
+            for platform in self.platforms:
+                platform.rect.y += round(abs(self.player1.velocity.y))
+
+                if platform.rect.top >= screen_height:#+(screen_height/4):
+                    platform.kill()
+            
+        # make new platforms 
+        #while len(self.platforms)>10:
+         #   self.send_more_platforms = True
+        
+        
     def draw(self):
+        
         self.screen.fill(white)
+       
         self.totalSprites.draw(self.screen)
         pg.display.update() # updates the whole screen, try to limit the times you update screen as this is the most intensive code. slowing the animation by a lot
 
