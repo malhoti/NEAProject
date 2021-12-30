@@ -39,10 +39,10 @@ def make_platform():
     return platform
 
 
-pos = [[40,screen_height-50],[0,0]]
+pos = [[40,screen_height-50,0],[0,screen_height+100,0]]
 platform_pos = [[0,screen_height-40,screen_width,40]] # this is the bottom platform
 
-for i in range(1):
+for i in range(10):
     platform_pos.append(make_platform())
 
 
@@ -52,19 +52,28 @@ def threaded_client(connection, player):
     # if player 1 connects , then you send players 2 cooridinates outside the screen so it appaers player 1 is in lobby by itself
     # if player connects  2 this changes the coordiantes and send it on screen, so on player 1's screen it appear as player 2 just joined the lobby
     if player ==0:    
-        info_to_send = pickle.dumps([pos[player],platform_pos])
+        info_to_send = pickle.dumps([pos,platform_pos])
         connection.send(info_to_send)
     else : 
-        info_to_send = pickle.dumps([[screen_width-150,screen_height-40],platform_pos])
+        info_to_send = pickle.dumps([[[screen_width-150,screen_height-40],pos[0],0],platform_pos])
         connection.send(info_to_send)
+
+   
         
     print("data was sent") # sending message to client 
 
     reply= []
     while True:
+        new_platform =[]
         try:
+
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
-            pos[player] = data
+           
+            pos[player] = data[0]
+           
+            send_platform = data[1]
+            if send_platform == True:
+                new_platform = make_platform()
 
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
@@ -81,7 +90,7 @@ def threaded_client(connection, player):
                 #print("Sending: ", reply)
             
             #change to sendall if something doesnt work
-            connection.sendall(pickle.dumps([reply,[]])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
 
@@ -95,6 +104,7 @@ def threaded_client(connection, player):
 currentPlayer = 0 # how many connetion are on
 
 while True:
+    print(ip_address)
     connection, address = sock.accept()
     print("Connected to:" , address)
 

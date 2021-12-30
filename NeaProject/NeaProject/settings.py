@@ -1,6 +1,6 @@
 # window settings
-screen_width=1000
-screen_height = 900
+screen_width=700
+screen_height = 800
 title = "Game"
 fps = 60
 

@@ -15,20 +15,16 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((40, 70))
         self.image.fill(colour)
         self.rect = self.image.get_rect()
-        # self.rect.center = (width / 2, height / 2)
-        
         self.position = vec(x,y)
-
+        #self.rect.midbottom = self.position 
+        
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
+        self.pushdown = 0
+    
+       
         
         
-        self.jump_velocity = PLAYER_jumpvelocity
-        self.isJump = False
-        
-        
-        self.mass = 1
-        self.turning_point = 1
 
     def move(self):
         self.acceleration = vec(0,PLAYER_gravity)  # if keys arent being pressed put acceleration to 0 as its not moving, PLAYER_gravity affect the y axis, so it adds gravity constantly to the player
@@ -38,7 +34,7 @@ class Player(pygame.sprite.Sprite):
             self.acceleration.x = -PLAYER_acceleration
         if keys[pygame.K_RIGHT]:
             self.acceleration.x = PLAYER_acceleration
-
+        
         self.update()
 
        
@@ -50,7 +46,7 @@ class Player(pygame.sprite.Sprite):
         # applying friction in movement
         self.acceleration.x += self.velocity.x * PLAYER_friction
         self.velocity += self.acceleration
-        self.position += self.acceleration*0.5  + self.velocity
+        self.position += self.acceleration*0.5 + self.velocity
         
              
        # switching to other side of screen if it hits the edge
@@ -59,15 +55,17 @@ class Player(pygame.sprite.Sprite):
         if self.position.x < 0:
             self.position.x = screen_width
 
-        self.rect.midbottom = self.position
+        self.rect.midbottom = self.position # sets the mid bottom of the rect to these coordinate the position of rectangle
 #self.rect.x += 1 
     #self.rect.x -= 1    
 
     def jump(self):
-        # jump allowed only if standing on a platform
+        #jump allowed only if standing on a platform
         hits = pygame.sprite.spritecollide(self, self.game.platforms, False)
         
         if hits:
             self.velocity.y =-20
+
+    
        
     
