@@ -5,6 +5,7 @@ from player import Player
 from platforms import Platform
 import random
 import pickle
+import copy
 
 
 from settings import *
@@ -32,23 +33,29 @@ print("SERVER STARTED!")
 
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
+def make_platform(onscreen):
+    if onscreen:
+        yrange =  random.randint(0,screen_height) #make platform on screen
 
+    else:
+        yrange =  random.randint(-75,-40) # make platform out of screen
 
-def make_platform():
-    platform = [random.randint(0,screen_width),random.randint(0,screen_height),80,40]
+    platform = [random.randint(0,screen_width-80), yrange,80,40]                               
+
     return platform
+
 
 
 pos = [[40,screen_height-50,0],[0,screen_height+100,0]]
 platform_pos = [[0,screen_height-40,screen_width,40]] # this is the bottom platform
 
 for i in range(10):
-    platform_pos.append(make_platform())
+    platform_pos.append(make_platform(True))
 
-
-def threaded_client(connection, player):
-    global currentplayer
-
+player1_platform = [] 
+player2_platform = []
+def threaded_client(connection, player): 
+    
     # if player 1 connects , then you send players 2 cooridinates outside the screen so it appaers player 1 is in lobby by itself
     # if player connects  2 this changes the coordiantes and send it on screen, so on player 1's screen it appear as player 2 just joined the lobby
     if player ==0:    
@@ -58,41 +65,56 @@ def threaded_client(connection, player):
         info_to_send = pickle.dumps([[[screen_width-150,screen_height-40],pos[0],0],platform_pos])
         connection.send(info_to_send)
 
-   
-        
-    print("data was sent") # sending message to client 
 
     reply= []
+    new_platform = []
+    run_p1 =True
+    run_p2 = True
     while True:
-        new_platform =[]
+        
         try:
-
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
-           
             pos[player] = data[0]
-           
             send_platform = data[1]
-            if send_platform == True:
-                new_platform = make_platform()
-
+            
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
                 break
 
             else:
+                if send_platform:
+                    temp_plat = make_platform(False)
+                    player1_platform.append(temp_plat)
+                    player2_platform.append(temp_plat)
+
                 if player == 1:
                     reply = pos[0]
-
-                else:
+                    
+                    new_platform = copy.deepcopy(player2_platform) # this copies the list onto the other
+                    if send_platform:
+                        for platform in player1_platform:
+                            platform[1] = platform[1]-(pos[1][2]-pos[0][2])
+                                            
+                    player2_platform.clear()
+                    
+                    
+                else: 
+                   
                     reply = pos[1]
+                    
+                    new_platform= copy.deepcopy(player1_platform)
+                    if send_platform: 
+                        for platform in player2_platform: 
+                           
+                            platform[1] = platform[1]-(pos[0][2]-pos[1][2])
 
-                #print("Recieved: ", data)
-                #print("Sending: ", reply)
-            
+                    player1_platform.clear()
+                   
             #change to sendall if something doesnt work
             connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
         except:
             break
+
 
     print("Lost connection")
     currentPlayer = 0
