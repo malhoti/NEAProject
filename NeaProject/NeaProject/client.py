@@ -36,20 +36,19 @@ class Game:
 
         self.totalSprites = pg.sprite.Group() # making sprite groups 
         self.platforms = pg.sprite.Group()
-     
+
         self.player1 = Player(player1Pos[0],player1Pos[1],self,green) # PLAYER 1
         self.totalSprites.add(self.player1)
-
+        
         self.player2 = Player(player2Pos[0],player2Pos[1],self,red)  
         self.totalSprites.add(self.player2)
-    
-
+     
         for i in range(len(platformPos)):
 
             p = Platform(*platformPos[i])       # *platformPos[i] is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
             self.totalSprites.add(p)
             self.platforms.add(p)
-       
+
         self.run()
 
 
@@ -65,13 +64,21 @@ class Game:
     def events(self):
         
         info_recv = self.network.send(([int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown],self.send_more_platforms))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-        
+       
         self.send_more_platforms = False
         player2Pos = info_recv[0]
         self.player2.position.x = player2Pos[0]
         self.player2.position.y = player2Pos[1] +(self.player1.pushdown-player2Pos[2])
-        
-
+        platform_pos = info_recv[1]
+       
+        for i in range(len(platform_pos)):
+            
+            if not platform_pos[i]:
+                pass
+            else:
+                p = Platform(platform_pos[i][0],platform_pos[i][1],platform_pos[i][2],platform_pos[i][3])       # *platformPos[i] is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
+                self.totalSprites.add(p)
+                self.platforms.add(p)
         
         self.player2.update()
     
@@ -85,13 +92,6 @@ class Game:
                   
                    self.player1.jump()
         
-       
-        
-        #for platform in self.platforms:
-            # platform.rect.y += 1
-       
-
-
     def update(self):
         self.player1.move()
         
@@ -117,14 +117,14 @@ class Game:
                     platform.kill()
             
         # make new platforms 
-        #while len(self.platforms)>10:
-         #   self.send_more_platforms = True
+        while len(self.platforms)<10 :
+           self.send_more_platforms = True
+           break
         
         
     def draw(self):
         
         self.screen.fill(white)
-       
         self.totalSprites.draw(self.screen)
         pg.display.update() # updates the whole screen, try to limit the times you update screen as this is the most intensive code. slowing the animation by a lot
 

@@ -64,7 +64,7 @@ class Player(pygame.sprite.Sprite):
         hits = pygame.sprite.spritecollide(self, self.game.platforms, False)
         
         if hits:
-            self.velocity.y =-20
+            self.velocity.y =-PLAYER_jump
 
     
        
