@@ -6,6 +6,7 @@ from platforms import Platform
 import random
 import pickle
 import copy
+from settings import *
 
 
 from settings import *
@@ -34,23 +35,29 @@ print("SERVER STARTED!")
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
 def make_platform(onscreen):
+    
     if onscreen:
-        yrange =  random.randint(0,screen_height) #make platform on screen
+        
+            platform = [random.randint(0,screen_width-80),int(i*(screen_height/START_plat_num)),80,40] 
 
     else:
-        yrange =  random.randint(-75,-40) # make platform out of screen
+        try:
+            yrange =  random.randint(-55,-40) # make platform out of screen
 
-    platform = [random.randint(0,screen_width-80), yrange,80,40]                               
+            platform= [random.randint(0,screen_width-80), yrange,80,40] 
+        except:
+            print("qitu")
 
     return platform
 
 
 
 pos = [[40,screen_height-50,0],[0,screen_height+100,0]]
-platform_pos = [[0,screen_height-40,screen_width,40]] # this is the bottom platform
+platform_pos = [[0,(7*screen_height)/8,screen_width,200]] # this is the bottom platform
 
-for i in range(10):
+for i in range(START_plat_num):
     platform_pos.append(make_platform(True))
+    
 
 player1_platform = [] 
 player2_platform = []

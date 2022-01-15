@@ -21,6 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
         self.pushdown = 0
+        self.jumping = False
     
        
         
@@ -42,7 +43,8 @@ class Player(pygame.sprite.Sprite):
     # which is why when we update the client code, we call move for player1, but only update for player2 so that player 2 cant move only when a second client joins    
     def update(self):  
 
-        
+        self.falling = False
+
         # applying friction in movement
         self.acceleration.x += self.velocity.x * PLAYER_friction
         self.velocity += self.acceleration
@@ -54,8 +56,10 @@ class Player(pygame.sprite.Sprite):
             self.position.x = 0
         if self.position.x < 0:
             self.position.x = screen_width
-
+        if self.velocity.y <0 :
+            self.jumping = True
         self.rect.midbottom = self.position # sets the mid bottom of the rect to these coordinate the position of rectangle
+        
 #self.rect.x += 1 
     #self.rect.x -= 1    
 
