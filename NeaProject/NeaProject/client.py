@@ -21,6 +21,7 @@ class Game:
         self.running = True
         self.send_more_platforms = False
         self.font_name = pg.font.match_font(font)
+        self.p2ready = False
         
 
 
@@ -28,21 +29,27 @@ class Game:
         self.network = Network()
         
         self.starting_info = self.network.getP() # get the information sent from the server
+        self.player = self.starting_info[0]
+        # playersPos = self.starting_info[0]
+        # player1Pos = playersPos[0]
+        # player2Pos = playersPos[1]
+        print("You are player", int(self.player) +1)
+        if int(self.player) == 0:
+            self.player1 = Player(40,screen_height-100,self,green)
+            self.player2 = Player(0,screen_height+100,self,red)
+        else:
+            self.player1 = Player(screen_width-40,(7*screen_height)/8,self,red)
+            self.player2 = Player(40,screen_height-100,self,green)
 
-        playersPos = self.starting_info[0]
-        player1Pos = playersPos[0]
-        player2Pos = playersPos[1]
         
         platformPos = self.starting_info[1]
 
         self.totalSprites = pg.sprite.Group() # making sprite groups 
         self.platforms = pg.sprite.Group()
         self.spikes = pg.sprite.Group()
-
-        self.player1 = Player(player1Pos[0],player1Pos[1],self,green) # PLAYER 1
         self.totalSprites.add(self.player1)
         
-        self.player2 = Player(player2Pos[0],player2Pos[1],self,red)  
+         
         self.totalSprites.add(self.player2)
          
         self.spike = Spike(0,screen_height+100,screen_width,screen_height)
@@ -72,16 +79,22 @@ class Game:
 
     def events(self):
         
-        info_recv = self.network.send(([int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown],self.send_more_platforms))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-       
+        info_recv = self.network.send(([int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,True],self.send_more_platforms))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
+        
         self.send_more_platforms = False
         
+        if not self.p2ready:
+        
+            self.show_lobby()
+
+
         player2Pos = info_recv[0]
         self.player2.position.x = player2Pos[0]
         self.player2.position.y = player2Pos[1] +(self.player1.pushdown-player2Pos[2])
-        
+        self.p2ready = player2Pos[3]
         platform_pos = info_recv[1]
 
+      
        
         for i in range(len(platform_pos)):
             
@@ -117,7 +130,7 @@ class Game:
 
         # the spike will slowly get faster and faster!!
         for spike in self.spikes:
-            spike.rect.y -= (1)
+            spike.rect.y -= (0)
 
         #this is going to act like a camera shift when the player reaches around the top of the screen
         #and delete platforms that go off the screen
@@ -164,15 +177,10 @@ class Game:
             if platform.rect.y <screen_height/8 : 
                 count += 1
 
-        print(count)
+       
         if count  == 0:
             empty_above = True
-        
-    
 
-
-        
-        
         
         while self.player1.rect.y <screen_height/4 and empty_above: #and len(self.platforms) <10:
             self.send_more_platforms = True
@@ -182,7 +190,51 @@ class Game:
         #     self.send_more_platforms = True
         #     break
         
+    def show_menu(self):
+        self.screen.fill(bgcolour)
+        self.draw_text(TITLE, 48 , black,screen_width/2,screen_height/4)
+        self.draw_text("jump and that",16,red,screen_width/2,screen_height/2)
+        pg.display.flip()
+        self.wait_for_key()
+
+    def show_lobby(self):
+        self.screen.fill(bgcolour)
+        self.draw_text("WAITING IN LOBBY...",70,black,screen_width/2,screen_height/2)
+        pg.display.flip()
+        self.wait_for_player2()
         
+
+
+    def wait_for_player2(self):
+         
+        waiting = True
+        while waiting:
+            info_recv = self.network.send(([int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,True],self.send_more_platforms))
+            self.clock.tick(fps)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.run = False
+                if info_recv[0][3]:
+                    waiting = False
+            
+
+    def show_go_screen(self):   
+        pass 
+
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(fps)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.run = False
+                if event.type == pg.KEYUP:
+                    waiting = False
+
+    
+   
     def draw(self):
         
         self.screen.fill(white)
@@ -201,6 +253,7 @@ class Game:
 
 
 game = Game()
+game.show_menu()
 while game.running:
     game.new()
 

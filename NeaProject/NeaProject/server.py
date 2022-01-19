@@ -52,7 +52,7 @@ def make_platform(onscreen):
 
 
 
-pos = [[40,screen_height-50,0],[0,screen_height+100,0]]
+pos = [[40,(7*screen_height)/8,0,False],[0,screen_height+100,0,False]]
 platform_pos = [[0,(7*screen_height)/8,screen_width,200]] # this is the bottom platform
 
 for i in range(START_plat_num):
@@ -65,13 +65,13 @@ def threaded_client(connection, player):
     
     # if player 1 connects , then you send players 2 cooridinates outside the screen so it appaers player 1 is in lobby by itself
     # if player connects  2 this changes the coordiantes and send it on screen, so on player 1's screen it appear as player 2 just joined the lobby
-    if player ==0:    
-        info_to_send = pickle.dumps([pos,platform_pos])
-        connection.send(info_to_send)
-    else : 
-        info_to_send = pickle.dumps([[[screen_width-150,screen_height-40],pos[0],0],platform_pos])
-        connection.send(info_to_send)
-
+    # if player ==0:    
+    #     info_to_send = pickle.dumps([pos,platform_pos])
+    #     connection.send(info_to_send)
+    # else : 
+    #     info_to_send = pickle.dumps([[[screen_width-150,screen_height-40],pos[0],0],platform_pos])
+    #     connection.send(info_to_send)
+    connection.send(pickle.dumps((str(player),platform_pos)))
 
     reply= []
     new_platform = []
@@ -79,13 +79,16 @@ def threaded_client(connection, player):
     run_p2 = True
     while True:
         
+        
         try:
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
+            
             pos[player] = data[0]
             send_platform = data[1]
             
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
+                pos[player][3] = False
                 break
 
             else:

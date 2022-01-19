@@ -1,4 +1,5 @@
 # window settings
+TITLE = "JUMPY"
 screen_width=700
 screen_height = 800
 title = "Game"
@@ -23,3 +24,5 @@ red=(255,0,0)
 green=(0,255,0)
 blue= (0,0,255)
 grey = (125,125,125)
+black = (0,0,0)
+bgcolour = (0,155,155)
