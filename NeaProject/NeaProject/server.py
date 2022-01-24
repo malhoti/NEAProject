@@ -37,22 +37,20 @@ print("SERVER STARTED!")
 def make_platform(onscreen):
     
     if onscreen:
-        
             platform = [random.randint(0,screen_width-80),int(i*(screen_height/START_plat_num)),80,40] 
 
     else:
         try:
             yrange =  random.randint(-55,-40) # make platform out of screen
-
             platform= [random.randint(0,screen_width-80), yrange,80,40] 
         except:
             print("qitu")
 
     return platform
 
+#pos(x, y, pushdown, ready, lost)
 
-
-pos = [[40,(7*screen_height)/8,0,False],[0,screen_height+100,0,False]]
+pos = [[40,(7*screen_height)/8,0,False,False],[0,screen_height+100,0,False,False]]
 platform_pos = [[0,(7*screen_height)/8,screen_width,200]] # this is the bottom platform
 
 for i in range(START_plat_num):
@@ -82,9 +80,12 @@ def threaded_client(connection, player):
         
         try:
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
+            print(data)
             
             pos[player] = data[0]
             send_platform = data[1]
+            
+            
             
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
@@ -92,6 +93,7 @@ def threaded_client(connection, player):
                 break
 
             else:
+
                 if send_platform:
                     temp_plat = make_platform(False)
                     player1_platform.append(temp_plat)
