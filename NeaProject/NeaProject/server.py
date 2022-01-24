@@ -50,7 +50,7 @@ def make_platform(onscreen):
 
 #pos(x, y, pushdown, ready, lost)
 
-pos = [[40,(7*screen_height)/8,0,False,False],[0,screen_height+100,0,False,False]]
+pos = [[0,0,0,False,False],[0,0,0,False,False]]
 platform_pos = [[0,(7*screen_height)/8,screen_width,200]] # this is the bottom platform
 
 for i in range(START_plat_num):
@@ -61,14 +61,7 @@ player1_platform = []
 player2_platform = []
 def threaded_client(connection, player): 
     
-    # if player 1 connects , then you send players 2 cooridinates outside the screen so it appaers player 1 is in lobby by itself
-    # if player connects  2 this changes the coordiantes and send it on screen, so on player 1's screen it appear as player 2 just joined the lobby
-    # if player ==0:    
-    #     info_to_send = pickle.dumps([pos,platform_pos])
-    #     connection.send(info_to_send)
-    # else : 
-    #     info_to_send = pickle.dumps([[[screen_width-150,screen_height-40],pos[0],0],platform_pos])
-    #     connection.send(info_to_send)
+    
     connection.send(pickle.dumps((str(player),platform_pos)))
 
     reply= []
@@ -80,19 +73,25 @@ def threaded_client(connection, player):
         
         try:
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
-            print(data)
+            
             
             pos[player] = data[0]
             send_platform = data[1]
+            lost = data[0][4]
+           # print("player",player,lost)
+
+            
             
             
             
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
-                pos[player][3] = False
+                pos[player] = [0,0,0,False,False] #this resets values
                 break
 
             else:
+
+               
 
                 if send_platform:
                     temp_plat = make_platform(False)
@@ -121,14 +120,22 @@ def threaded_client(connection, player):
                             platform[1] = platform[1]-(pos[0][2]-pos[1][2])
 
                     player1_platform.clear()
+
+                if lost:
+                    pos[0][3] = False
+                    pos[1][3] = False # when someone loses reset their ready to False so that on the client side they can wait in lobby again
+                    #connection.sendall(pickle.dumps([reply,new_platform])) # this essentialy restarts the whole game so everyone starts new
+                   # break
                    
             #change to sendall if something doesnt work
             connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+            
         except:
             break
 
 
     print("Lost connection")
+    pos[player] = [0,0,0,False,False] #this resets the players values 
     currentPlayer = 0
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 

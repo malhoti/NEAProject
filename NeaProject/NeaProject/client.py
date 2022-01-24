@@ -22,6 +22,7 @@ class Game:
         self.running = True
         self.send_more_platforms = False
         self.font_name = pg.font.match_font(font)
+        self.p1ready = True
         self.p2ready = False
         self.player1lost = False
         self.player2lost = False
@@ -39,6 +40,7 @@ class Game:
         # player2Pos = playersPos[1]
         print("You are player", int(self.player) +1)
         if int(self.player) == 0:
+            
             self.player1 = Player(40,screen_height-100,self,green)
             self.player2 = Player(0,screen_height+100,self,red)
         else:
@@ -72,13 +74,9 @@ class Game:
         
         self.run()
 
-
-
-
-
     def run(self):
-        self.run1 = True
-        while self.run1:
+        self.run = True
+        while self.run:
             self.clock.tick(fps)
             self.events()
             self.update()
@@ -92,24 +90,17 @@ class Game:
             print("you lost")
             self.player1lost = True
             
-
-        if self.player2lost:
-            self.show_victory_screen()
-            self.totalSprites.empty()
-            
-
-
-        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,True,self.player1lost],self.send_more_platforms
-        
-        info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-        
-        self.send_more_platforms = False
         
         if not self.p2ready:
-            
-            self.show_lobby()
+                self.show_lobby()
 
+        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
+        
+        info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
+        self.send_more_platforms = False
 
+        
+        # changing player 2 attributes when the server sent its details
         player2Pos = info_recv[0]
        
         self.player2.position.x = player2Pos[0]
@@ -117,6 +108,21 @@ class Game:
         self.p2ready = player2Pos[3]
         platformPos = info_recv[1]
         self.player2lost = player2Pos[4]
+
+        
+        if self.player1lost:
+            self.show_go_screen()
+
+        if self.player2lost:
+            self.show_victory_screen()
+
+        
+
+        
+
+       
+
+           
 
         for i in range(len(platformPos)):
             
@@ -129,8 +135,7 @@ class Game:
         
         self.player2.update()
 
-        if self.player1lost:
-            self.show_go_screen()
+        
             
     
         for event in pg.event.get():
@@ -228,32 +233,40 @@ class Game:
         pg.display.flip()
         self.wait_for_player2()
         
-
-    def wait_for_player2(self):
-         
+    def wait_for_key(self):
         waiting = True
+        
         while waiting:
-            info_recv = self.network.send((self.info_to_send))
-            print(info_recv)
             self.clock.tick(fps)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     waiting = False
                     self.run = False
-                if info_recv[0][3]:
+                if event.type == pg.KEYUP:
                     waiting = False
-            
 
+    def wait_for_player2(self):
+        waiting = True
+        while waiting:
+            self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
+            info_recv = self.network.send((self.info_to_send))
+           
+            self.clock.tick(fps)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.run = False
+            if info_recv[0][3]:
+                waiting = False
+    
+            
     def show_go_screen(self):   
         self.screen.fill(red)
         self.draw_text("YOU LOST", 70, black,screen_width/2,screen_height/4)
-        
-
         self.draw_text("Press a key...",16,black,screen_width/2,screen_height/2)
-        
         pg.display.flip()
         self.wait_for_key()
-        self.run1 = False
+        self.run = False
         
 
     def show_victory_screen(self):
@@ -263,20 +276,11 @@ class Game:
         
         pg.display.flip()
         self.wait_for_key()
-        self.run1 = False
+        self.run= False
         
         
 
-    def wait_for_key(self):
-        waiting = True
-        while waiting:
-            self.clock.tick(fps)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.run = False
-                if event.type == pg.KEYUP:
-                    waiting = False
+   
 
     
    
