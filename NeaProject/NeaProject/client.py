@@ -229,8 +229,10 @@ class Game:
 
     def show_lobby(self):
         self.screen.fill(bgcolour)
+        
         self.draw_text("WAITING IN LOBBY...",70,black,screen_width/2,screen_height/2)
         pg.display.flip()
+        pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
         self.wait_for_player2()
         
     def wait_for_key(self):
@@ -265,6 +267,7 @@ class Game:
         self.draw_text("YOU LOST", 70, black,screen_width/2,screen_height/4)
         self.draw_text("Press a key...",16,black,screen_width/2,screen_height/2)
         pg.display.flip()
+        pg.time.delay(1000)# adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
         self.run = False
         
@@ -275,6 +278,7 @@ class Game:
         self.draw_text("Press a key...",16,black,screen_width/2,screen_height/2)
         
         pg.display.flip()
+        pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
         self.run= False
         
