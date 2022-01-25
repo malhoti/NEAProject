@@ -84,11 +84,11 @@ class Game:
 
 
     def events(self):
-
+        self.p1ready = False # his makes you unready so that when sent to the server, it makes you already unready for when the game restarts so it doesnt have to do the check
+        
         # Checks if anyone has won or lost first, this is so that if it is the case, then the client can send one last message to the server to let it know that this client lost or won
         if self.player1.rect.bottom >= self.spike.rect.top:
             print("you lost")
-            
             self.player1lost = True
             
         
@@ -112,16 +112,15 @@ class Game:
         self.player2lost = player2Pos[4]
 
         
+
+        
         if self.player1lost:
             self.show_go_screen()
 
         if self.player2lost:
             self.show_victory_screen()
 
-        
-
-        if not ( self.p1ready and self.p2ready):
-            self.run = False
+    
 
        
 
