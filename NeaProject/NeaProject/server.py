@@ -123,7 +123,9 @@ def threaded_client(connection, player):
 
                 if lost:
                     pos[0][3] = False
-                    pos[1][3] = False # when someone loses reset their ready to False so that on the client side they can wait in lobby again
+                    pos[1][3] = False
+                   
+                     # when someone loses reset their ready to False so that on the client side they can wait in lobby again
                     #connection.sendall(pickle.dumps([reply,new_platform])) # this essentialy restarts the whole game so everyone starts new
                    # break
                    

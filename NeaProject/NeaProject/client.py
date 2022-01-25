@@ -72,7 +72,7 @@ class Game:
             self.totalSprites.add(p)
             self.platforms.add(p)
         
-        self.run()
+        self.show_lobby()
 
     def run(self):
         self.run = True
@@ -88,11 +88,10 @@ class Game:
         # Checks if anyone has won or lost first, this is so that if it is the case, then the client can send one last message to the server to let it know that this client lost or won
         if self.player1.rect.bottom >= self.spike.rect.top:
             print("you lost")
-            self.p1ready = False
+            
             self.player1lost = True
             
-        if not self.p2ready:
-            self.show_lobby()
+        
        
 
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
@@ -231,6 +230,7 @@ class Game:
         pg.display.flip()
         pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
+        
 
     def show_lobby(self):
         self.screen.fill(bgcolour)
@@ -239,6 +239,7 @@ class Game:
         pg.display.flip()
         pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
         self.wait_for_player2()
+        self.run()
         
     def wait_for_key(self):
         waiting = True
@@ -249,6 +250,7 @@ class Game:
                 if event.type == pg.QUIT:
                     waiting = False
                     self.run = False
+                    quit()
                 if event.type == pg.KEYUP:
                     waiting = False
 
@@ -257,34 +259,39 @@ class Game:
         while waiting:
             self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
             info_recv = self.network.send((self.info_to_send))
+            
+            
+            if info_recv[0][3]:
+                waiting = False
            
             self.clock.tick(fps)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     waiting = False
                     self.run = False
-            if info_recv[0][3]:
-                waiting = False
+            
     
             
     def show_go_screen(self):   
         self.screen.fill(red)
         self.draw_text("YOU LOST", 70, black,screen_width/2,screen_height/4)
-        self.draw_text("Press a key...",16,black,screen_width/2,screen_height/2)
+        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
         pg.display.flip()
-        pg.time.delay(1000)# adding delay because if you spam a key it can gltich the game
+        #pg.time.delay(1000)# adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
+        self.run = False
         
         
 
     def show_victory_screen(self):
         self.screen.fill(green)
         self.draw_text("YOU WON", 70, black,screen_width/2,screen_height/4)
-        self.draw_text("Press a key...",16,black,screen_width/2,screen_height/2)
+        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
         
         pg.display.flip()
-        pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
+       # pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
+        self.run = False
         
         
         
