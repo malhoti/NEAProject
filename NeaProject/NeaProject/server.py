@@ -69,6 +69,8 @@ def threaded_client(connection, player):
     run_p1 =True
     run_p2 = True
     while True:
+
+        
         
         
         try:
@@ -91,7 +93,6 @@ def threaded_client(connection, player):
 
             else:
 
-               
 
                 if send_platform:
                     temp_plat = make_platform(False)
@@ -121,23 +122,29 @@ def threaded_client(connection, player):
 
                     player1_platform.clear()
 
-                if lost:
-                    pos[0][3] = False
-                    pos[1][3] = False
+                # if lost:
+                #     pos[0][3] = False
+                #     pos[1][3] = False
                    
                      # when someone loses reset their ready to False so that on the client side they can wait in lobby again
                     #connection.sendall(pickle.dumps([reply,new_platform])) # this essentialy restarts the whole game so everyone starts new
                    # break
                    
             #change to sendall if something doesnt work
+
+
+            
             connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
             
+              
+            
         except:
+            print("im here")
             break
 
 
     print("Lost connection")
-    pos[player] = [0,0,0,False,False] #this resets the players values 
+    #this resets the players values 
     currentPlayer = 0
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 
