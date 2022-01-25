@@ -88,15 +88,18 @@ class Game:
         # Checks if anyone has won or lost first, this is so that if it is the case, then the client can send one last message to the server to let it know that this client lost or won
         if self.player1.rect.bottom >= self.spike.rect.top:
             print("you lost")
+            self.p1ready = False
             self.player1lost = True
             
-        
         if not self.p2ready:
-                self.show_lobby()
+            self.show_lobby()
+       
 
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
         
+        
         info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
+        
         self.send_more_platforms = False
 
         
@@ -118,7 +121,8 @@ class Game:
 
         
 
-        
+        if not ( self.p1ready and self.p2ready):
+            self.run = False
 
        
 
@@ -225,6 +229,7 @@ class Game:
         self.draw_text(TITLE, 48 , black,screen_width/2,screen_height/4)
         self.draw_text("press a key",56,red,screen_width/2,screen_height/2)
         pg.display.flip()
+        pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
 
     def show_lobby(self):
@@ -232,7 +237,7 @@ class Game:
         
         self.draw_text("WAITING IN LOBBY...",70,black,screen_width/2,screen_height/2)
         pg.display.flip()
-        pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
+        pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
         self.wait_for_player2()
         
     def wait_for_key(self):
@@ -269,7 +274,7 @@ class Game:
         pg.display.flip()
         pg.time.delay(1000)# adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
-        self.run = False
+        
         
 
     def show_victory_screen(self):
@@ -280,7 +285,7 @@ class Game:
         pg.display.flip()
         pg.time.delay(1000)#adding delay because if you spam a key it can gltich the game
         self.wait_for_key()
-        self.run= False
+        
         
         
 
@@ -306,7 +311,7 @@ class Game:
 
 while True:
     game = Game()
-    print("yo")
+    print("new game")
     game.show_menu()
 
     game.new()
