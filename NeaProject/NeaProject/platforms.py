@@ -14,7 +14,7 @@ class Platform(pygame.sprite.Sprite):
         self.rect.y = y
 
     def draw(self, window):
-       pygame.draw.rect(window, self.colour, self.rect)
+           pygame.draw.rect(window, self.colour, self.rect)
 
 class Spike(Platform):
     def __init__(self,x,y,w,h):

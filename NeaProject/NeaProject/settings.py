@@ -1,3 +1,4 @@
+import math
 # window settings
 TITLE = "JUMPY"
 screen_width=700
@@ -15,7 +16,7 @@ PLAYER_jump = 20
 
 #Platfroms
 PLATFROM_ARRAY = [(2,0, screen_height-40, screen_width,40)]
-START_plat_num = 8
+START_plat_num = int(math.ceil(screen_height/150))
                 
 
 #global varibales

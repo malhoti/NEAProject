@@ -34,129 +34,176 @@ print("SERVER STARTED!")
 
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
 
-def make_platform(onscreen):
+
+
+def make_platform(onscreen,i):
     
     if onscreen:
-            platform = [random.randint(0,screen_width-80),int(i*(screen_height/START_plat_num)),80,40] 
+        platform = [random.randint(0,screen_width-80),int(i*(screen_height/START_plat_num)),80,40] 
 
     else:
         try:
             yrange =  random.randint(-55,-40) # make platform out of screen
             platform= [random.randint(0,screen_width-80), yrange,80,40] 
         except:
-            print("qitu")
+            pass
 
     return platform
 
 #pos(x, y, pushdown, ready, lost)
 
-pos = [[0,0,0,False,False],[0,0,0,False,False]]
-platform_pos = [[0,(7*screen_height)/8,screen_width,200]] # this is the bottom platform
+connected = set()
+games = {}
+idCount = 0
 
-for i in range(START_plat_num):
-    platform_pos.append(make_platform(True))
-    
+leaving_players = 0
 
-player1_platform = [] 
-player2_platform = []
-def threaded_client(connection, player): 
+def threaded_client(connection, player,gameId): 
+
+    global idCount
+    global leaving_players
+   
+
+    player1 = 0
+    player2 = 1
+    player1_platform = 2
+    player2_platform = 3
+
+  
     
-    
-    connection.send(pickle.dumps((str(player),platform_pos)))
+    start_platform = [0,(7*screen_height)/8,screen_width,200]
+
+    if player == 0:
+        if gameId in games:
+            game = games[gameId]
+            games[gameId][player1_platform].append(start_platform) 
+            games[gameId][player2_platform].append(start_platform) 
+            
+
+            for i in range(START_plat_num):
+                start_plat = make_platform(True,i)
+                games[gameId][player1_platform].append(start_plat) 
+                games[gameId][player2_platform].append(start_plat)   
+
+    connection.send(pickle.dumps((str(player),games[gameId][player+2])))
+
+    games[gameId][player+2].clear()
 
     reply= []
-    new_platform = []
-    run_p1 =True
-    run_p2 = True
+    
     while True:
-
         
-        
-        
+    
         try:
             data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
             
-            
-            pos[player] = data[0]
+            game = games[gameId]
+            game[player] = data[0]
             send_platform = data[1]
-            lost = data[0][4]
-           # print("player",player,lost)
 
-            
-            
-            
-            
+
             if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                 print("Disconnected")
-                pos[player] = [0,0,0,False,False] #this resets values
+                game[player] = [0,0,0,False,True,False] #this allows the other player know he won
                 break
 
             else:
 
-
                 if send_platform:
-                    temp_plat = make_platform(False)
-                    player1_platform.append(temp_plat)
-                    player2_platform.append(temp_plat)
+                    temp_plat = make_platform(False,0)
+                    game[player1_platform].append(temp_plat)
+                    game[player2_platform].append(temp_plat)
 
                 if player == 1:
-                    reply = pos[0]
+                    reply = game[player1]
                     
-                    new_platform = copy.deepcopy(player2_platform) # this copies the list onto the other
+                    new_platform = copy.deepcopy(game[player2_platform]) # this copies the list onto the other
                     if send_platform:
-                        for platform in player1_platform:
-                            platform[1] = platform[1]-(pos[1][2]-pos[0][2])
+                        for platform in game[player1_platform]:
+                            platform[1] = platform[1]-(game[player2][2]-game[player1][2])
                                             
-                    player2_platform.clear()
+                    
+                    game[player2_platform].clear()
                     
                     
                 else: 
-                   
-                    reply = pos[1]
                     
-                    new_platform= copy.deepcopy(player1_platform)
+                    reply =  game[player2]
+                    
+                    new_platform= copy.deepcopy(game[player1_platform])
                     if send_platform: 
-                        for platform in player2_platform: 
-                           
-                            platform[1] = platform[1]-(pos[0][2]-pos[1][2])
+                        for platform in game[player2_platform]: 
+                        
+                            platform[1] = platform[1]-(game[player1][2]-game[player2][2])
+                    
 
-                    player1_platform.clear()
+                    
+                    game[player1_platform].clear()
+                    
 
-                # if lost:
-                #     pos[0][3] = False
-                #     pos[1][3] = False
-                   
-                     # when someone loses reset their ready to False so that on the client side they can wait in lobby again
-                    #connection.sendall(pickle.dumps([reply,new_platform])) # this essentialy restarts the whole game so everyone starts new
-                   # break
-                   
+                
+                
             #change to sendall if something doesnt work
 
-
+            
             
             connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
             
-              
+
+            if game[player1][5] and game[player2][5]:
+                idCount += -1
+                break
+
+        except Exception as e:
+            print(e) 
+            idCount += -1
             
-        except:
-            print("im here")
             break
 
-
+    
     print("Lost connection")
-    #this resets the players values 
-    currentPlayer = 0
+    
+    #this resets the players values
+
+
+    
+    if games[gameId][player1][5] and games[gameId][player2][5]:
+        try:
+            del games[gameId]
+            print("closing game", gameId)
+        except:
+            pass
+
+    print(games)
+    idCount += -1
+    
+   
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 
 # threading is basically allowing many function to be processed at the same time. For this case, whilst the while loop is running, if it callsthreaded_client, it doesnt need that function to finish to carry on the while loop, the while loop will still run whilt the function is also running
 # this is so that it is always allowing for connections to connect. if the function is being run, and a client joins the server, then they wont be able to join as te while loop isnt running at that current time. so threading fixes that problem
 
-currentPlayer = 0 # how many connetion are on
+
 
 while True:
     print(ip_address)
     connection, address = sock.accept()
     print("Connected to:" , address)
 
-    start_new_thread(threaded_client,(connection,currentPlayer%2))
-    currentPlayer+= 1
+    idCount += 1
+    print(idCount,"this is the idCount")
+    player = 0
+    gameId = (idCount-1)//2
+    if idCount % 2 == 1:
+        games[gameId] = [[1,2,3,False,False,False],[4,5,6,False,False,False],[],[]]
+       
+    else:
+        
+        player = 1
+
+    print(games)
+
+    start_new_thread(threaded_client,(connection,player,gameId))
+    
+    
+    
